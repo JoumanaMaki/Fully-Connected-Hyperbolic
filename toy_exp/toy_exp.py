@@ -283,7 +283,7 @@ def main():
     print("-" * 80)
 
     # Manifolds (Instantiate once)
-    lorentz_manifold = Lorentz(k=1.0)
+    lorentz_manifold = Lorentz(k_value=1.0)
     poincare_manifold = Poincare(c=0.01)
 
     # Results Structure: results[model][distance] = {mean, std, raw}

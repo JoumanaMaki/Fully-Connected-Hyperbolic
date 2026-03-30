@@ -23,7 +23,7 @@ class LorentzConv2d(nn.Module):
         fc_variant: str = "ours",
     ):
         super().__init__()
-        self.manifold = manifold or Lorentz(k=1.0)
+        self.manifold = manifold or Lorentz(k_value=1.0)
 
         if isinstance(kernel_size, int):
             kernel_size = (kernel_size, kernel_size)

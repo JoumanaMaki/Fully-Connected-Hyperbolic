@@ -21,7 +21,15 @@ from layers import Lorentz, LorentzFullyConnected, Poincare, project, Poincare_l
 # =============================================================================
 # Timing Function (with minor cleanup)
 # =============================================================================
+class EuclideanLinear(nn.Module):
+      def __init__(self, in_features, out_features):
+          super().__init__()
+          self.weight = nn.Parameter(torch.randn(in_features, out_features))
+          self.bias = nn.Parameter(torch.zeros(out_features))
 
+      def forward(self, x):
+          return F.relu(x @ self.weight + self.bias)
+      
 
 def time_operation_cuda(model, input_tensor, method_name="forward"):
     """
@@ -131,6 +139,8 @@ def main():
         "Batch",
         "Fwd Mean (ms)",
         "Fwd Std (ms)",
+        "Bwd Mean (ms)",
+        "Bwd Std (ms)",
     ]
 
     # Write header. 'w' mode overwrites the file if it exists.
@@ -174,12 +184,19 @@ def main():
 
         # --- Models to Test (defined inside the loop to be fresh for each config) ---
         models_to_test = {
-            "FGG-LNN": (
+            "FGG-LNN (cached)": (
                 LorentzFullyConnected(
                     in_dim + 1, out_dim, manifold=lorentz_manifold, activation=F.relu
                 ),
                 lorentz_input,
                 "forward_cache",
+            ),
+            "FGG-LNN": (
+                LorentzFullyConnected(
+                    in_dim + 1, out_dim, manifold=lorentz_manifold, activation=F.relu
+                ),
+                lorentz_input,
+                "forward",
             ),
             "Chen": (
                 ChenLinear(
@@ -197,7 +214,7 @@ def main():
                                 poincare_input,
                                 "forward"),
             "Euclidean": (
-                nn.Sequential(nn.Linear(in_dim, out_dim), nn.ReLU()),
+                EuclideanLinear(in_dim, out_dim),
                 euclidean_input,
                 "forward",
             ),
@@ -242,6 +259,8 @@ def main():
                         {
                             "Fwd Mean (ms)": fw_mean,
                             "Fwd Std (ms)": fw_std,
+                            "Bwd Mean (ms)": bw_mean,
+                            "Bwd Std (ms)": bw_std,
                         }
                     )
 
@@ -251,6 +270,8 @@ def main():
                         {
                             "Fwd Mean (ms)": "ERROR",
                             "Fwd Std (ms)": "ERROR",
+                            "Bwd Mean (ms)": "ERROR",
+                            "Bwd Std (ms)": "ERROR",
                         }
                     )
 

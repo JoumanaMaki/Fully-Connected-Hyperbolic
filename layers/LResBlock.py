@@ -24,7 +24,7 @@ class LorentzResBlock(nn.Module):
     ):
 
         super().__init__()
-        self.manifold = manifold or Lorentz(k=1.0)
+        self.manifold = manifold or Lorentz(k_value=1.0)
         self.skip_bn2 = skip_bn2
 
         self.layer1 = LorentzConv2d(
