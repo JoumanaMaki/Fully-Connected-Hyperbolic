@@ -10,3 +10,5 @@ HyperbolicCV/
 msp.yml
 */wandb/*
 .claude/
+requirements.txt
+wandb/
