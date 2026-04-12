@@ -19,23 +19,21 @@ class BdeirLorentzMLR(nn.Module):
             torch.zeros(
                 num_classes,
             )
-        ) #displacement parameter for each class, should be non-negative (acts like a bias term but in hyperbolic space)
+        )
         self.z = torch.nn.Parameter(
             F.pad(torch.zeros(num_classes, num_features - 2), pad=(1, 0), value=1)
-        )  # z should not be (0,0) defines the orientation of the hyperplane, so we initialize it to (1,0,...,0)
+        )  # z should not be (0,0)
 
         self.init_weights()
 
     def forward(self, x, scale_displacement: bool = False):
         # Hyperplane
-
-        # The method computes signed distance from input points to decision hyperplanes
         if not scale_displacement:
             sqrt_mK = self.manifold.k().sqrt()
             norm_z = torch.norm(self.z, dim=-1)
-            w_t = torch.sinh(sqrt_mK * self.a) * norm_z  # time-like component of the hyperplane normal vector
-            w_s = torch.cosh(sqrt_mK * self.a.view(-1, 1)) * self.z # space-like component of the hyperplane normal vector
-            beta = torch.sqrt(-(w_t**2) + torch.norm(w_s, dim=-1) ** 2) # norm of the hyperplane normal vector (should be positive for space-like vectors)
+            w_t = torch.sinh(sqrt_mK * self.a) * norm_z
+            w_s = torch.cosh(sqrt_mK * self.a.view(-1, 1)) * self.z
+            beta = torch.sqrt(-(w_t**2) + torch.norm(w_s, dim=-1) ** 2)
             alpha = -w_t * x.narrow(-1, 0, 1) + (
                 torch.cosh(sqrt_mK * self.a)
                 * torch.inner(x.narrow(-1, 1, x.shape[-1] - 1), self.z)
